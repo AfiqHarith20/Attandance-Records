@@ -1,5 +1,7 @@
 import 'package:attendance_record/dummy_data.dart';
+import 'package:attendance_record/models/attendance.dart';
 import 'package:attendance_record/screen/home_page.dart';
+import 'package:attendance_record/screen/search_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -20,6 +22,12 @@ class MyApp extends StatelessWidget {
       home: HomePage(
         attendance: Dummy_Data,
       ),
+      // routes: {
+      //   SearchPage.routeName: (context) => SearchPage(
+      //         attendance: Dummy_Data,
+      //         onSearch: (List<Attendance> filteredAttendance) {},
+      //       ),
+      // },
     );
   }
 }
