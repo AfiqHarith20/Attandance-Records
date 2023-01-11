@@ -24,8 +24,8 @@ class MyApp extends StatelessWidget {
       ),
       // routes: {
       //   SearchPage.routeName: (context) => SearchPage(
-      //         attendance: Dummy_Data,
-      //         onSearch: (List<Attendance> filteredAttendance) {},
+      //         attendance: [],
+      //         onSearch: (List<Attendance> attendance) {},
       //       ),
       // },
     );
