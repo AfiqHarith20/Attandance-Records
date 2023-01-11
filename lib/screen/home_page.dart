@@ -1,5 +1,6 @@
 import 'package:attendance_record/models/attendance.dart';
 import 'package:attendance_record/screen/add_attendance_record_screen.dart';
+import 'package:attendance_record/screen/record_detail_page.dart';
 import 'package:attendance_record/screen/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:date_format/date_format.dart';
@@ -24,7 +25,9 @@ class _HomePageState extends State<HomePage> {
   late List<Attendance> _filteredAttendanceList;
   final _searchController = TextEditingController();
   bool _isToggle = false;
-  bool _showSearchBar = false;
+  late bool _showSearchBar = false;
+  bool _endReached = false;
+
   final DateFormat _ddMMMYYFormat = DateFormat("dd MM yyyy, h:mm:a");
 
   void _addAttendanceRecord() {
@@ -71,31 +74,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _handleSearch() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SearchPage(
-            attendance: _filteredAttendance,
-            onSearch: onSearch,
-          ),
-        ));
+    final keyword = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredAttendance = widget._attendance.where((attendance) {
+        return attendance.user.toLowerCase().contains(keyword) ||
+            attendance.phoneNum.toLowerCase().contains(keyword);
+      }).toList();
+    });
   }
 
-  void _openSearchPage() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SearchPage(
-            attendance: _filteredAttendance,
-            onSearch: (List<Attendance> filteredList) {
-              setState(() {
-                _filteredAttendanceList = filteredList;
-              });
-              Navigator.pop(context);
-            },
-          ),
-        ));
-  }
+  // void _openSearchPage() {
+  //   Navigator.pushNamed(context, SearchPage.routeName, arguments: {
+  //     'attendance': _filteredAttendance,
+  //     'onSearch': onSearch,
+  //   });
+  // }
 
   void onSearch(List<Attendance> filteredList) {
     setState(() {
@@ -105,7 +98,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedAttendances = widget._attendance.sort(
+    final sortedAttendances = _filteredAttendance.sort(
       (a, b) => b.checkIn.compareTo(a.checkIn),
     );
     return Builder(
@@ -115,38 +108,47 @@ class _HomePageState extends State<HomePage> {
             title: const Text("Attendance Record"),
             actions: <Widget>[
               IconButton(
-                icon: Icon(Icons.search),
+                icon: const Icon(Icons.search),
                 onPressed: () {
                   showDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: Text("Search"),
+                        title: const Text("Search"),
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            TextField(
-                              decoration: const InputDecoration(
-                                  labelText: "Enter name or phone number"),
-                              onChanged: (text) {
-                                setState(() {
-                                  _filteredAttendanceList =
-                                      widget._attendance.where((attendance) {
-                                    final keyword = text.toLowerCase();
-                                    return attendance.user
-                                            .toLowerCase()
-                                            .contains(keyword) ||
-                                        attendance.phoneNum
-                                            .toLowerCase()
-                                            .contains(keyword);
-                                  }).toList();
-                                });
-                              },
-                            ),
+                            if (_showSearchBar)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextField(
+                                  controller: _searchController,
+                                  decoration: const InputDecoration(
+                                      labelText: "Enter name or phone number"),
+                                  onChanged: (text) {
+                                    setState(() {
+                                      _filteredAttendanceList = widget
+                                          ._attendance
+                                          .where((attendance) {
+                                        final keyword = text.toLowerCase();
+                                        return attendance.user
+                                                .toLowerCase()
+                                                .contains(keyword) ||
+                                            attendance.phoneNum
+                                                .toLowerCase()
+                                                .contains(keyword);
+                                      }).toList();
+                                    });
+                                  },
+                                ),
+                              ),
                             TextButton(
-                              child: Text("Search"),
+                              child: const Text("Search"),
                               onPressed: () {
-                                Navigator.pop(context);
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  _showSearchBar = true;
+                                });
                               },
                             ),
                           ],
@@ -174,21 +176,88 @@ class _HomePageState extends State<HomePage> {
               )
             ],
           ),
-          body: ListView.builder(
-            itemCount: _filteredAttendance.length,
-            itemBuilder: (context, index) {
-              final attendance = _filteredAttendance[index];
-              return ListTile(
-                title: Text(attendance.user),
-                subtitle: Text(attendance.phoneNum),
-                trailing: Text(
-                  _isToggle
-                      ? _ddMMMYYFormat.format(attendance.checkIn)
-                      : timeago.format(attendance.checkIn, locale: "en_short"),
+          body: _showSearchBar
+              ? ListView.builder(
+                  itemCount: _filteredAttendance.length + (_endReached ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (_endReached && index == _filteredAttendance.length) {
+                      return Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(16),
+                        child:
+                            const Text("You have reached the end of the list"),
+                      );
+                    }
+                    final attendance = _filteredAttendance[index];
+                    return Card(
+                      child: ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RecordDetailsPage(
+                                  attendance: _filteredAttendanceList[index]),
+                            ),
+                          );
+                        },
+                        title: Text(attendance.user),
+                        subtitle: Text(attendance.phoneNum),
+                        trailing: Text(
+                          _isToggle
+                              ? _ddMMMYYFormat.format(attendance.checkIn)
+                              : timeago.format(attendance.checkIn,
+                                  locale: "en_short"),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : ListView.builder(
+                  itemCount: _filteredAttendance.length + (_endReached ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (_endReached && index == _filteredAttendance.length) {
+                      return Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(16),
+                        child:
+                            const Text("You have reached the end of the list"),
+                      );
+                    }
+                    controller:
+                    ScrollController(
+                      keepScrollOffset: true,
+                      initialScrollOffset: 0.0,
+                      debugLabel: "ListView",
+                      // onScrollEnd: () {
+                      //   setState(() {
+                      //     _endReached = true;
+                      //   });
+                      // }
+                    );
+                    final attendance = _filteredAttendance[index];
+                    return Card(
+                      child: ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RecordDetailsPage(
+                                  attendance: _filteredAttendanceList[index]),
+                            ),
+                          );
+                        },
+                        title: Text(attendance.user),
+                        subtitle: Text(attendance.phoneNum),
+                        trailing: Text(
+                          _isToggle
+                              ? _ddMMMYYFormat.format(attendance.checkIn)
+                              : timeago.format(attendance.checkIn,
+                                  locale: "en_short"),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
           floatingActionButton: FloatingActionButton(
             onPressed: _addAttendanceRecord,
             child: const Icon(Icons.add),
