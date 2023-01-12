@@ -1,11 +1,13 @@
 import 'package:attendance_record/models/attendance.dart';
 import 'package:attendance_record/screen/add_attendance_record_screen.dart';
 import 'package:attendance_record/screen/record_detail_page.dart';
+import 'package:animated_icon_button/animated_icon_button.dart';
 import 'package:attendance_record/screen/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:date_format/date_format.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
@@ -23,6 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late List<Attendance> _filteredAttendance = List.from(widget._attendance);
   late List<Attendance> _filteredAttendanceList;
+  final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   bool _isToggle = false;
   late bool _showSearchBar = false;
@@ -64,13 +67,25 @@ class _HomePageState extends State<HomePage> {
     });
     _filteredAttendanceList = widget._attendance;
     _searchController.addListener(_handleSearch);
+    _scrollController.addListener(_checkEndReached);
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     _searchController.dispose();
+    _scrollController.removeListener(_checkEndReached);
     super.dispose();
+  }
+
+  void _checkEndReached() {
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
+        !_scrollController.position.outOfRange) {
+      setState(() {
+        _endReached = true;
+      });
+    }
   }
 
   void _handleSearch() {
@@ -107,8 +122,17 @@ class _HomePageState extends State<HomePage> {
           appBar: AppBar(
             title: const Text("Attendance Record"),
             actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.search),
+              AnimatedIconButton(
+                splashColor: Colors.transparent,
+                duration: const Duration(seconds: 2),
+                icons: const [
+                  AnimatedIconItem(
+                    icon: Icon(
+                      Icons.search,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -118,30 +142,28 @@ class _HomePageState extends State<HomePage> {
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            if (_showSearchBar)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextField(
-                                  controller: _searchController,
-                                  decoration: const InputDecoration(
-                                      labelText: "Enter name or phone number"),
-                                  onChanged: (text) {
-                                    setState(() {
-                                      _filteredAttendanceList = widget
-                                          ._attendance
-                                          .where((attendance) {
-                                        final keyword = text.toLowerCase();
-                                        return attendance.user
-                                                .toLowerCase()
-                                                .contains(keyword) ||
-                                            attendance.phoneNum
-                                                .toLowerCase()
-                                                .contains(keyword);
-                                      }).toList();
-                                    });
-                                  },
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: const InputDecoration(
+                                    labelText: "Enter name or phone number"),
+                                onChanged: (text) {
+                                  setState(() {
+                                    _filteredAttendanceList =
+                                        widget._attendance.where((attendance) {
+                                      final keyword = text.toLowerCase();
+                                      return attendance.user
+                                              .toLowerCase()
+                                              .contains(keyword) ||
+                                          attendance.phoneNum
+                                              .toLowerCase()
+                                              .contains(keyword);
+                                    }).toList();
+                                  });
+                                },
                               ),
+                            ),
                             TextButton(
                               child: const Text("Search"),
                               onPressed: () {
@@ -178,6 +200,7 @@ class _HomePageState extends State<HomePage> {
           ),
           body: _showSearchBar
               ? ListView.builder(
+                  controller: _scrollController,
                   itemCount: _filteredAttendance.length + (_endReached ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (_endReached && index == _filteredAttendance.length) {
@@ -195,8 +218,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RecordDetailsPage(
-                                  attendance: _filteredAttendanceList[index]),
+                              builder: (context) =>
+                                  RecordDetailsPage(attendance: attendance),
                             ),
                           );
                         },
@@ -213,6 +236,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 )
               : ListView.builder(
+                  controller: _scrollController,
                   itemCount: _filteredAttendance.length + (_endReached ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (_endReached && index == _filteredAttendance.length) {
@@ -223,17 +247,7 @@ class _HomePageState extends State<HomePage> {
                             const Text("You have reached the end of the list"),
                       );
                     }
-                    controller:
-                    ScrollController(
-                      keepScrollOffset: true,
-                      initialScrollOffset: 0.0,
-                      debugLabel: "ListView",
-                      // onScrollEnd: () {
-                      //   setState(() {
-                      //     _endReached = true;
-                      //   });
-                      // }
-                    );
+
                     final attendance = _filteredAttendance[index];
                     return Card(
                       child: ListTile(
@@ -241,8 +255,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RecordDetailsPage(
-                                  attendance: _filteredAttendanceList[index]),
+                              builder: (context) =>
+                                  RecordDetailsPage(attendance: attendance),
                             ),
                           );
                         },
@@ -258,9 +272,18 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: AnimatedIconButton(
+            duration: const Duration(milliseconds: 100),
+            splashColor: Colors.transparent,
             onPressed: _addAttendanceRecord,
-            child: const Icon(Icons.add),
+            icons: const [
+              AnimatedIconItem(
+                icon: Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
           ),
         );
       },

@@ -33,7 +33,7 @@ class _AddAttandanceRecordScreenState extends State<AddAttandanceRecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Attendance Record'),
+        title: const Text('New Attendance Record'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,15 +41,15 @@ class _AddAttandanceRecordScreenState extends State<AddAttandanceRecordScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(labelText: 'Name'),
             ),
             TextField(
               controller: _phoneNumberController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
+              decoration: const InputDecoration(labelText: 'Phone Number'),
             ),
             TextField(
               controller: _checkInController,
-              decoration: InputDecoration(labelText: 'Check In Time'),
+              decoration: const InputDecoration(labelText: 'Check In Time'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -60,7 +60,7 @@ class _AddAttandanceRecordScreenState extends State<AddAttandanceRecordScreen> {
                 );
                 widget.onSave(newAttendance);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:attendance_record/models/attendance.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class RecordDetailsPage extends StatefulWidget {
   final Attendance attendance;
@@ -18,16 +19,38 @@ class _RecordDetailsPageState extends State<RecordDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Attendance Record"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              final String contactInfo =
+                  "Name: ${widget.attendance.user}\nPhone Number: ${widget.attendance.phoneNum}\nCheck-In Time: ${widget.attendance.checkIn}";
+              Share.share(contactInfo, subject: "Attendance Record");
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text("Name: ${widget.attendance.user}"),
-            Text("Phone Number: ${widget.attendance.phoneNum}"),
-            Text("Check-In Time: ${widget.attendance.checkIn}"),
-          ],
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  title: const Text("Name"),
+                  subtitle: Text(widget.attendance.user),
+                ),
+                ListTile(
+                  title: const Text("Phone Number"),
+                  subtitle: Text(widget.attendance.phoneNum),
+                ),
+                ListTile(
+                  title: const Text("Check-In Time"),
+                  subtitle: Text(widget.attendance.checkIn.toString()),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
