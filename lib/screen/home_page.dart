@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> {
             attendance: newAttendance,
             onSave: (attendance) {
               setState(() {
+                widget._attendance.add(attendance);
                 _filteredAttendance.add(attendance);
               });
               Navigator.pop(context);
@@ -59,7 +60,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     timeago.setLocaleMessages('en_short', timeago.EnShortMessages());
-    timeago.setLocaleMessages('fr', timeago.FrMessages());
+    timeago.setLocaleMessages('en', timeago.FrMessages());
     //load the saved state of the toggle button
     SharedPreferences.getInstance().then((prefs) {
       _isToggle = prefs.getBool("isToggle") ?? false;
@@ -129,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                   AnimatedIconItem(
                     icon: Icon(
                       Icons.search,
-                      color: Colors.purple,
+                      color: Color.fromARGB(255, 218, 237, 47),
                     ),
                   ),
                 ],
@@ -184,6 +185,7 @@ class _HomePageState extends State<HomePage> {
               Transform.scale(
                 scale: 0.7,
                 child: Switch(
+                  activeColor: Colors.blue,
                   value: _isToggle,
                   onChanged: (value) {
                     setState(() {
