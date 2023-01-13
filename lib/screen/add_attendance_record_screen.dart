@@ -16,6 +16,7 @@ class AddAttandanceRecordScreen extends StatefulWidget {
 }
 
 class _AddAttandanceRecordScreenState extends State<AddAttandanceRecordScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _checkInController = TextEditingController();
@@ -35,34 +36,60 @@ class _AddAttandanceRecordScreenState extends State<AddAttandanceRecordScreen> {
       appBar: AppBar(
         title: const Text('New Attendance Record'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: _phoneNumberController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-            ),
-            TextField(
-              controller: _checkInController,
-              decoration: const InputDecoration(labelText: 'Check In Time'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newAttendance = Attendance(
-                  user: _nameController.text,
-                  phoneNum: _phoneNumberController.text,
-                  checkIn: DateTime.parse(_checkInController.text),
-                );
-                widget.onSave(newAttendance);
-              },
-              child: const Text('Save'),
-            ),
-          ],
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  prefixIcon: Icon(Icons.person_outline_rounded),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Name can't be empty";
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _phoneNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number',
+                  prefixIcon: Icon(Icons.phone_android_outlined),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Phone Number can't be empty";
+                  }
+                  return null;
+                },
+              ),
+              TextField(
+                controller: _checkInController,
+                decoration: const InputDecoration(
+                  labelText: 'Check In Time',
+                  prefixIcon: Icon(Icons.timer_rounded),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    final newAttendance = Attendance(
+                      user: _nameController.text,
+                      phoneNum: _phoneNumberController.text,
+                      checkIn: DateTime.parse(_checkInController.text),
+                    );
+                    widget.onSave(newAttendance);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
         ),
       ),
     );

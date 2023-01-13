@@ -37,14 +37,17 @@ class _RecordDetailsPageState extends State<RecordDetailsPage> {
             child: Column(
               children: <Widget>[
                 ListTile(
+                  leading: const Icon(Icons.person_outline_rounded),
                   title: const Text("Name"),
                   subtitle: Text(widget.attendance.user),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.phone_android_rounded),
                   title: const Text("Phone Number"),
                   subtitle: Text(widget.attendance.phoneNum),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.timer_rounded),
                   title: const Text("Check-In Time"),
                   subtitle: Text(widget.attendance.checkIn.toString()),
                 ),
